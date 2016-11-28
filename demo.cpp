@@ -11,7 +11,7 @@ a=((b+c)*d-e/f)*2
 q=((x*x)+w-(y/y-e))*r
 x=(a+b)*(88.4-4)
 wrong:
-a=(sd*5)))
+a(sd*5)))
 */
 ////////////////////////////////////////////////////////////////
 #define _CRT_SECURE_NO_WARNINGS
@@ -26,7 +26,7 @@ a=(sd*5)))
 
 using namespace std;
 
-int s_main();
+void sem_analysis();
 #define MAX 100 
 void s_SET_Mul_Div(int i, int m);
 void s_SET_Add_Sub(int j, int m);
@@ -78,29 +78,6 @@ void action();
 void first();
 void File();
 void exchange();
-void sem_analysis();
-
-//语义分析
-/*void sem_analysis(char op)
-{
-	if (sem_stack.size()>=2)
-	{
-		//cout << "进入语义栈函数调用" << endl;
-		char a = sem_stack.top();
-		sem_stack.pop();
-		char b = sem_stack.top();
-		sem_stack.pop();
-		char t = 'x';
-		cout << "\t\t\t\t(" << op << "," << a << "," << b << "," << t << ")" << endl;
-		sem_stack.push(t);//把新元素压栈
-		return;
-	}
-	else
-	{
-		cout << "\t\t语义栈内的元素个数：" << sem_stack.size() << endl;
-		return;
-	}
-}*/
 
 //词法分析
 int scanner()
@@ -326,7 +303,6 @@ int scanner()
 	}
 	return 0;
 }
-
 //将词法分析得到的结果token转成相应的文法内容Vn或者Vt;
 void exchange()
 {
@@ -370,7 +346,6 @@ void exchange()
 	}
 	return;
 }
-
 //调用词法分析器函数
 void administrator()
 {
@@ -401,7 +376,8 @@ void administrator()
 	}
 	return;
 }
-//函数调用部分
+
+//语法分析动作函数
 void action()
 {
 	if (mystack.top() == *now)//如果栈顶==当前符
@@ -415,7 +391,7 @@ void action()
 	{
 		if ((decode(mystack.top(), *now)) == f9)
 		{
-			cout << "WRONG" << endl;
+			cout << "结果：语法分析失败" << endl;
 			exit(-1);
 			return;
 		}
@@ -554,16 +530,19 @@ void first()
 {
 	mystack.push('#');
 	mystack.push('E');
+	cout << endl;
+	cout << "——————————语法分析————————" << endl;
 	cout << "\n栈操作" << "\t" <<"元素\t" <<"当前符" << " \t\t" << "表达式" << endl;
 	char *now = huancun3;
 	while ((mystack.top() != '#') && (*now != '#'))//栈顶符号不为#且当前符号不等与#
 	{
 		action();
 	}
-	cout << "*******************************************" << endl;
-	cout << "RIGHT" << endl;
+	cout << "结果：语法分析成功" << endl;
 	return;
 }
+
+
 //文件操作函数
 void File()
 {
@@ -582,13 +561,13 @@ void File()
 	cout << huancun3 << endl;
 	return;
 }
-
 int main()
 {
 	m = 0;
 	p = 0;
 	ifstream infile;
-	infile.open("E:\code.txt", ios::in);
+	infile.open("E:\code1.txt", ios::in);
+	//infile.open("E:\code.txt", ios::in);
 	if (infile.fail())
 	{
 		cout << "文件解析出错" << endl;
@@ -599,72 +578,37 @@ int main()
 	{//文件没有结束则继续读取.
 		infile.getline(huancun2, 300, '&');
 		infile >> huancun2;
-		//strcpy(s_string, huancun2);
-		huancun2[0] = '(';
+		huancun2[0] = 'a';
 	}
+	cout << "————————所输入的句子————————" << endl;
 	cout << huancun2<<endl;//输入的例子
-
-
+	cout << "——————————词法分析————————" << endl;
 	administrator();//调用词法分析器函数
 	m = 0;
 	p = 0;
 	n = 0;
 	exchange();//将词法分析得到的结果token转成相应的文法内容Vn或者Vt;得到的内容是文法产生的一个句子
-	cout << endl<<huancun3;//经过变化得到的对应的一个句子
+	cout << endl;
+	cout<<"得到的句子:"<<huancun3;//经过变化得到的对应的一个句子
 	infile.close();
 	sem_analysis();
-
 	first();//LL1分析入口函数
+	cout << "——————————————————————" << endl;
+	cout << endl;
 	return 0;
 }
+
+
 //语义分析
-int s_main()
-{
-	int s_p[MAX];//
-	char s_ch;
-	int s_c = -1, s_q = 0;
-	printf("enter expression:");
-	while ((s_ch = getchar()) != '\n')
-	{
-		s_string[s_m++] = s_ch;
-		if (s_ch == '=' || s_ch == '+' || s_ch == '-' || s_ch == '*' || s_ch == '/')
-			s_count++;
-		else if (s_ch == '(')
-		{
-			s_p[++s_c] = s_m - 1;
-		}
-		else if (s_ch == ')')
-		{
-			s_q = s_m - 1;
-			s_SET_Mul_Div(s_p[s_c], s_q);//从左括号处理到右括号，先乘除
-			s_SET_Add_Sub(s_p[s_c], s_q);//后加减
-			s_temp = (int)s_tempvar - 1;
-			s_tempvar = (char)s_temp;
-			s_string[s_p[s_c]] = s_string[s_m - 1] = s_tempvar;
-			s_c--;
-			s_temp = (int)s_tempvar + 1;
-			s_tempvar = (char)s_temp;
-		}
-	}
-	/********调用生成四元式的函数********/
-	s_print();//不在括号里的用print操作处理，依旧先乘除后加减，再赋值操作
-	/*********判断是否成功**********/
-	if (s_count == 0) //所有的式子都分析出来了
-		printf("successful\n");
-	else
-		printf("failed\n");
-	return 0;
-}
 void sem_analysis()
 {
 	int s_p[MAX];//
 	char s_ch;
 	int s_c = -1, s_q = 0;
-	cout << endl <<"——————————四元式生成序列————————" << endl;
+	cout << endl <<"——————————语义分析————————" << endl;
 	strcpy(s_string,huancun2);
-	//cin >> s_string;
 	cout << s_string << endl;
-	//s_string 赋值有问题
+	cout << "四元式序列：" << endl;
 	while (s_string[s_m]!='#')
 	{
 		s_ch = s_string[s_m++];
@@ -688,35 +632,11 @@ void sem_analysis()
 		}
 		
 	}
-	//while ((s_ch = getchar()) != '\n')
-	//{
-	//	s_string[s_m++] = s_ch;
-	//	if (s_ch == '=' || s_ch == '+' || s_ch == '-' || s_ch == '*' || s_ch == '/')
-	//		s_count++;
-	//	else if (s_ch == '(')
-	//	{
-	//		s_p[++s_c] = s_m - 1;
-	//	}
-	//	else if (s_ch == ')')
-	//	{
-	//		s_q = s_m - 1;
-	//		s_SET_Mul_Div(s_p[s_c], s_q);//从左括号处理到右括号，先乘除
-	//		s_SET_Add_Sub(s_p[s_c], s_q);//后加减
-	//		s_temp = (int)s_tempvar - 1;
-	//		s_tempvar = (char)s_temp;
-	//		s_string[s_p[s_c]] = s_string[s_m - 1] = s_tempvar;
-	//		s_c--;
-	//		s_temp = (int)s_tempvar + 1;
-	//		s_tempvar = (char)s_temp;
-	//	}
-	//}
-	/********调用生成四元式的函数********/
 	s_print();//不在括号里的用print操作处理，依旧先乘除后加减，再赋值操作
-	/*********判断是否成功**********/
-	if (s_count == 0) //所有的式子都分析出来了
-		printf("successful\n");
+	if (s_count == 0 && s_string[s_m] == '#') //所有的式子都分析出来了
+		cout << "结果：语义分析成功" << endl;
 	else
-		printf("failed\n");
+		cout << "结果：语义分析失败" << endl;
 	return;
 }
 //处理乘除运算 （处理的是一个括号里的内容，不包括括号）
