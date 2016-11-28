@@ -4,14 +4,9 @@
 //** Version:1.0.0
 //** Description:
 /*
+词法分析
 语法分析：LL(1)方法
-eg:
-correct:
-a=((b+c)*d-e/f)*2
-q=((x*x)+w-(y/y-e))*r
-x=(a+b)*(88.4-4)
-wrong:
-a(sd*5)))
+简单语义分析，四元式的生成
 */
 ////////////////////////////////////////////////////////////////
 #define _CRT_SECURE_NO_WARNINGS
@@ -28,8 +23,8 @@ using namespace std;
 
 void sem_analysis();
 #define MAX 100 
-void s_SET_Mul_Div(int i, int m);
-void s_SET_Add_Sub(int j, int m);
+void s_SET_Mul_Div(int i, int m,bool flag);
+void s_SET_Add_Sub(int j, int m,bool flag);
 void s_print();
 int s_m = 0;
 int s_count = 0;
@@ -392,6 +387,8 @@ void action()
 		if ((decode(mystack.top(), *now)) == f9)
 		{
 			cout << "结果：语法分析失败" << endl;
+			cout << "——————————————————————" << endl;
+			cout << endl;
 			exit(-1);
 			return;
 		}
@@ -566,8 +563,9 @@ int main()
 	m = 0;
 	p = 0;
 	ifstream infile;
-	infile.open("E:\code1.txt", ios::in);
-	//infile.open("E:\code.txt", ios::in);
+	infile.open("E:\code.txt", ios::in);
+	//infile.open("E:\code1.txt", ios::in);
+	//infile.open("E:\code2.txt", ios::in);
 	if (infile.fail())
 	{
 		cout << "文件解析出错" << endl;
@@ -609,6 +607,7 @@ void sem_analysis()
 	strcpy(s_string,huancun2);
 	cout << s_string << endl;
 	cout << "四元式序列：" << endl;
+	bool flag = false;
 	while (s_string[s_m]!='#')
 	{
 		s_ch = s_string[s_m++];
@@ -617,18 +616,24 @@ void sem_analysis()
 		else if (s_ch == '(')
 		{
 			s_p[++s_c] = s_m - 1;
+			flag = false;
 		}
 		else if (s_ch == ')')
 		{
+			if (flag==true)
+			{
+				break;
+			}
 			s_q = s_m - 1;
-			s_SET_Mul_Div(s_p[s_c], s_q);//从左括号处理到右括号，先乘除
-			s_SET_Add_Sub(s_p[s_c], s_q);//后加减
+			s_SET_Mul_Div(s_p[s_c], s_q,flag);//从左括号处理到右括号，先乘除
+			s_SET_Add_Sub(s_p[s_c], s_q,flag);//后加减
 			s_temp = (int)s_tempvar - 1;
 			s_tempvar = (char)s_temp;
 			s_string[s_p[s_c]] = s_string[s_m - 1] = s_tempvar;
 			s_c--;
 			s_temp = (int)s_tempvar + 1;
 			s_tempvar = (char)s_temp;
+			flag = true;
 		}
 		
 	}
@@ -640,8 +645,12 @@ void sem_analysis()
 	return;
 }
 //处理乘除运算 （处理的是一个括号里的内容，不包括括号）
-void s_SET_Mul_Div(int i, int m) 
+void s_SET_Mul_Div(int i, int m,bool flag) 
 {
+	if (flag==true)
+	{
+		return;
+	}
 	for (i++; i <= m - 1; i++)
 	{
 		if (s_string[i] == '*' || s_string[i] == '/')
@@ -656,8 +665,12 @@ void s_SET_Mul_Div(int i, int m)
 	}
 }
 //处理加减运算 （处理的是一个括号里的内容，不包括括号）
-void s_SET_Add_Sub(int j, int m) 
+void s_SET_Add_Sub(int j, int m,bool flag) 
 {
+	if (flag == true)
+	{
+		return;
+	}
 	j++;
 	for (; j <= m - 1; j++)
 	{
